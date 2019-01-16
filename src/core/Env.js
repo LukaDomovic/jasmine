@@ -251,18 +251,24 @@ getJasmineRequireObj().Env = function(j$) {
     var beforeAndAfterFns = function(suite) {
       return function() {
         var befores = [],
-          afters = [];
+          beforeExs = [],
+          afters = [],
+          afterExs = [];
 
         while(suite) {
           befores = befores.concat(suite.beforeFns);
+          beforeExs = beforeExs.concat(suite.beforeExFns);
           afters = afters.concat(suite.afterFns);
+          afterExs = afterExs.concat(suite.afterExFns);
 
           suite = suite.parentSuite;
         }
 
         return {
           befores: befores.reverse(),
-          afters: afters
+          beforeExs: beforeExs.reverse(),
+          afters: afters,
+          afterExs: afterExs
         };
       };
     };
@@ -788,6 +794,7 @@ getJasmineRequireObj().Env = function(j$) {
       var spec = new j$.Spec({
         id: getNextSpecId(),
         beforeAndAfterFns: beforeAndAfterFns(suite),
+        parentSuite: suite,
         expectationFactory: expectationFactory,
         asyncExpectationFactory: asyncExpectationFactory,
         resultCallback: specResultCallback,
@@ -864,11 +871,26 @@ getJasmineRequireObj().Env = function(j$) {
     };
 
     this.expect = function(actual) {
+      var queueableFns;
+      if( currentSpec ) {
+        queueableFns = beforeAndAfterFns(currentSpec.parentSuite)();
+      }
+      
+      if ( queueableFns && queueableFns.beforeExs.length > 0 ) {
+        this.attemptFns( queueableFns.beforeExs );
+      }
+
       if (!currentRunnable()) {
         throw new Error('\'expect\' was used when there was no current spec, this could be because an asynchronous test timed out');
       }
 
-      return currentRunnable().expect(actual);
+      var returnVal = currentRunnable().expect(actual);
+      
+      if( queueableFns && queueableFns.afterExs.length > 0 ) {
+        this.attemptFns( queueableFns.afterExs );
+      }
+
+      return returnVal;
     };
 
     this.expectAsync = function(actual) {
@@ -879,11 +901,32 @@ getJasmineRequireObj().Env = function(j$) {
       return currentRunnable().expectAsync(actual);
     };
 
+    this.attemptFns = function( queueableFns ) {
+
+      for ( var iteration = 0; iteration < queueableFns.length; iteration++ ) {
+        try {
+          queueableFns[iteration].fn.call(currentSpec.userContext);
+        } catch(e) {
+          console.log(e);
+        }
+      }
+
+    };
+
     this.beforeEach = function(beforeEachFunction, timeout) {
       ensureIsNotNested('beforeEach');
       ensureIsFunctionOrAsync(beforeEachFunction, 'beforeEach');
       currentDeclarationSuite.beforeEach({
         fn: beforeEachFunction,
+        timeout: timeout || 0
+      });
+    };
+
+    this.beforeEachExpect = function(beforeEachExpectFunction, timeout) {
+      ensureIsNotNested('beforeEachExpect');
+      ensureIsFunctionOrAsync(beforeEachExpectFunction, 'beforeEachExpect');
+      currentDeclarationSuite.beforeEachExpect({
+        fn: beforeEachExpectFunction,
         timeout: timeout || 0
       });
     };
@@ -903,6 +946,15 @@ getJasmineRequireObj().Env = function(j$) {
       afterEachFunction.isCleanup = true;
       currentDeclarationSuite.afterEach({
         fn: afterEachFunction,
+        timeout: timeout || 0
+      });
+    };
+
+    this.afterEachExpect = function(afterEachExpectFunction, timeout) {
+      ensureIsNotNested('afterEachExpect');
+      ensureIsFunctionOrAsync(afterEachExpectFunction, 'afterEachExpect');
+      currentDeclarationSuite.afterEachExpect({
+        fn: afterEachExpectFunction,
         timeout: timeout || 0
       });
     };

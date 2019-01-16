@@ -6,6 +6,7 @@ getJasmineRequireObj().Spec = function(j$) {
     this.id = attrs.id;
     this.description = attrs.description || '';
     this.queueableFn = attrs.queueableFn;
+    this.parentSuite = attrs.parentSuite;
     this.beforeAndAfterFns = attrs.beforeAndAfterFns || function() { return {befores: [], afters: []}; };
     this.userContext = attrs.userContext || function() { return {}; };
     this.onStart = attrs.onStart || function() {};

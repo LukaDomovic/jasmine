@@ -10,7 +10,9 @@ getJasmineRequireObj().Suite = function(j$) {
     this.throwOnExpectationFailure = !!attrs.throwOnExpectationFailure;
 
     this.beforeFns = [];
+    this.beforeExFns = [];
     this.afterFns = [];
+    this.afterExFns = [];
     this.beforeAllFns = [];
     this.afterAllFns = [];
 
@@ -60,12 +62,20 @@ getJasmineRequireObj().Suite = function(j$) {
     this.beforeFns.unshift(fn);
   };
 
+  Suite.prototype.beforeEachExpect = function(fn) {
+    this.beforeExFns.unshift(fn);
+  };
+
   Suite.prototype.beforeAll = function(fn) {
     this.beforeAllFns.push(fn);
   };
 
   Suite.prototype.afterEach = function(fn) {
     this.afterFns.unshift(fn);
+  };
+
+  Suite.prototype.afterEachExpect = function(fn) {
+    this.afterExFns.unshift(fn);
   };
 
   Suite.prototype.afterAll = function(fn) {
@@ -82,7 +92,9 @@ getJasmineRequireObj().Suite = function(j$) {
     removeFns(this.beforeAllFns);
     removeFns(this.afterAllFns);
     removeFns(this.beforeFns);
+    removeFns(this.beforeExFns);
     removeFns(this.afterFns);
+    removeFns(this.afterExFns);
   };
 
   Suite.prototype.addChild = function(child) {

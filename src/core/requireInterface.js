@@ -113,6 +113,19 @@ getJasmineRequireObj().interface = function(jasmine, env) {
     },
 
     /**
+     * Run some shared setup before each of the expectations in the {@link describe} in which it is called.
+     * @name beforeEachExpect
+     * @function
+     * @global
+     * @param {implementationCallback} [function] Function that contains the code to setup your specs.
+     * @param {Int} [timeout={@link jasmine.DEFAULT_TIMEOUT_INTERVAL}] Custom timeout for an async beforeEach.
+     * @see async
+     */
+    beforeEachExpect: function() {
+      return env.beforeEachExpect.apply(env, arguments);
+    },
+
+    /**
      * Run some shared teardown after each of the specs in the {@link describe} in which it is called.
      * @name afterEach
      * @function
@@ -123,6 +136,19 @@ getJasmineRequireObj().interface = function(jasmine, env) {
      */
     afterEach: function() {
       return env.afterEach.apply(env, arguments);
+    },
+
+    /**
+     * Run some shared setup after each of the expectations in the {@link describe} in which it is called.
+     * @name afterEachExpect
+     * @function
+     * @global
+     * @param {implementationCallback} [function] Function that contains the code to setup your specs.
+     * @param {Int} [timeout={@link jasmine.DEFAULT_TIMEOUT_INTERVAL}] Custom timeout for an async beforeEach.
+     * @see async
+     */
+    afterEachExpect: function() {
+      return env.afterEachExpect.apply(env, arguments);
     },
 
     /**
