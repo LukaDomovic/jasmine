@@ -905,7 +905,7 @@ getJasmineRequireObj().Env = function(j$) {
 
       for ( var iteration = 0; iteration < queueableFns.length; iteration++ ) {
         try {
-          queueableFns[iteration].fn.call(currentSpec.userContext);
+          queueableFns[iteration].fn.call(currentSpec.userContext());
         } catch(e) {
           console.log(e);
         }
